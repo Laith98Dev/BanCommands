@@ -1,0 +1,17 @@
+name: BanCommands
+api: [4.0.0]
+main: Laith98Dev\BanCommands\Main
+author: Laith98Dev
+website: https://github.com/Laith98Dev
+version: 1.0.0
+
+commands:
+  bancommands:
+    description: args Command
+    permission: bc.command
+    aliases:
+     - bc
+
+permissions:
+  bc.command:
+    default: op
