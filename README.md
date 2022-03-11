@@ -1,5 +1,5 @@
 # BanCommands
-Simple plugin to bnn a command from a specific world.
+Simple plugin to ban a command from a specific world. 
 
 # How to use the plugin?
 - frist you need to ad dthe command who u want to banned it, Usage: `/bancommands addcmd <cmd>`, Note: add command with slash same as "/mycommand".
