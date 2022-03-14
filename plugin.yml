@@ -4,6 +4,7 @@ main: Laith98Dev\BanCommands\Main
 author: Laith98Dev
 website: https://github.com/Laith98Dev
 version: 1.0.0
+description: Simple plugin to ban a command from a specific world.
 
 commands:
   bancommands:
