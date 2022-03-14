@@ -12,13 +12,13 @@ Simple plugin to ban a command from a specific world.
 # Commands List
 Command | Permission | aliases
 --- | --- | ---
-`/bancommands` | `bc.command` | `bc`
-`/bancommands help` | `bc.command` | 
-`/bancommands addcmd <cmd>` | `bc.command` | 
-`/bancommands rmcmd <cmd>` | `bc.command` | 
-`/bancommands addworld <cmd> <world>` | `bc.command` |
-`/bancommands rmworld <cmd> <world>` | `bc.command` |
-`/bancommands list <cmd>` | `bc.command` | 
+`/bancommands` | `bancommands.command` | `bc`
+`/bancommands help` | `bancommands.command` | 
+`/bancommands addcmd <cmd>` | `bancommands.command` | 
+`/bancommands rmcmd <cmd>` | `bancommands.command` | 
+`/bancommands addworld <cmd> <world>` | `bancommands.command` |
+`/bancommands rmworld <cmd> <world>` | `bancommands.command` |
+`/bancommands list <cmd>` | `bancommands.command` | 
 
 # Support Us
 - [![Donate](https://img.shields.io/badge/donate-Paypal-yellow.svg?style=flat-square)](https://paypal.me/Laith113)
