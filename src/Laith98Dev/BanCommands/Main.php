@@ -53,7 +53,7 @@ class Main extends PluginBase implements Listener
 	public function onEnable(): void{
 		@mkdir($this->getDataFolder());
 		
-		$this->cfg = new Config($this->getDataFolder() . "config.yml", Config::YAML, ["cmds"]);// ok just one time :)
+		$this->cfg = new Config($this->getDataFolder() . "config.yml", Config::YAML, ["cmds" => []]);// ok just one time :)
 		
 		$this->getServer()->getPluginManager()->registerEvents($this, $this);
 	}
