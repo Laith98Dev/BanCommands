@@ -9,12 +9,12 @@ description: Simple plugin to ban a command from a specific world.
 commands:
   bancommands:
     description: BanCmd Command
-    permission: bc.command
+    permission: bancommands.command
     aliases:
      - bc
 
 permissions:
-  bc.command:
+  bancommands.command:
     default: op
-  bc.whitelist:
+  bancommands.whitelist:
     default: op
