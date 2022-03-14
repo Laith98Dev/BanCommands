@@ -166,7 +166,7 @@ class Main extends PluginBase implements Listener
 			
 			if(in_array($player->getWorld()->getFolderName(), $worlds) && strtolower(explode(" ", $command, 2)[0]) == $cmd){
 				// if(!$player->hasPermission(DefaultPermissions::ROOT_OPERATOR)){
-				if(!$player->hasPermission("bc.whitelist")){
+				if(!$player->hasPermission("bancommands.whitelist")){
 					$player->sendMessage(TF::RED . "Command Banned!");
 					$event->cancel();
 				}
