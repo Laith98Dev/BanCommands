@@ -47,10 +47,13 @@ use pocketmine\command\{Command, CommandSender};
 
 class Main extends PluginBase implements Listener 
 {
+	/** @var Config */
+	private $cfg;
+	
 	public function onEnable(): void{
 		@mkdir($this->getDataFolder());
 		
-		(new Config($this->getDataFolder() . "config.yml", Config::YAML, ["cmds"]));
+		$this->cfg = new Config($this->getDataFolder() . "config.yml", Config::YAML, ["cmds"]);// ok just one time :)
 		
 		$this->getServer()->getPluginManager()->registerEvents($this, $this);
 	}
@@ -80,7 +83,7 @@ class Main extends PluginBase implements Listener
 								return false;
 							}
 							
-							$cfg = new Config($this->getDataFolder() . "config.yml", Config::YAML);
+							$cfg = $this->cfg;
 							$all = $cfg->get("cmds", []);
 							$cmd_ = strtolower($args[1]);
 							
@@ -156,7 +159,7 @@ class Main extends PluginBase implements Listener
         $player = $event->getPlayer();
 		$command = $event->getMessage();
 		
-		$cfg = new Config($this->getDataFolder() . "config.yml", Config::YAML);
+		$cfg = $this->cfg;
 		$all = $cfg->get("cmds", []);
 		
 		foreach ($all as $cmd => $worlds){
@@ -179,7 +182,7 @@ class Main extends PluginBase implements Listener
     }
 	
 	public function addCommand(string $cmd): bool{
-		$cfg = new Config($this->getDataFolder() . "config.yml", Config::YAML);
+		$cfg = $this->cfg;
 		$all = $cfg->get("cmds", []);
 		$cmd_ = strtolower($cmd);
 		
@@ -194,7 +197,7 @@ class Main extends PluginBase implements Listener
 	}
 	
 	public function removeCommand(string $cmd): bool{
-		$cfg = new Config($this->getDataFolder() . "config.yml", Config::YAML);
+		$cfg = $this->cfg;
 		$all = $cfg->get("cmds", []);
 		$cmd_ = strtolower($cmd);
 		
@@ -209,7 +212,7 @@ class Main extends PluginBase implements Listener
 	}
 	
 	public function addWorld(string $cmd, string $world): bool{
-		$cfg = new Config($this->getDataFolder() . "config.yml", Config::YAML);
+		$cfg = $this->cfg;
 		$all = $cfg->get("cmds", []);
 		$cmd_ = strtolower($cmd);
 		
@@ -226,7 +229,7 @@ class Main extends PluginBase implements Listener
 	}
 	
 	public function removeWorld(string $cmd, string $world): bool{
-		$cfg = new Config($this->getDataFolder() . "config.yml", Config::YAML);
+		$cfg = $this->cfg;
 		$all = $cfg->get("cmds", []);
 		$cmd_ = strtolower($cmd);
 		
