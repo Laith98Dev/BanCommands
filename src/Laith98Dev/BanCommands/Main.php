@@ -5,20 +5,20 @@ namespace Laith98Dev\BanCommands;
 /*  
  *  A plugin for PocketMine-MP.
  *  
- *	 _           _ _   _    ___   ___  _____             
- *	| |         (_) | | |  / _ \ / _ \|  __ \            
- *	| |     __ _ _| |_| |_| (_) | (_) | |  | | _____   __
- *	| |    / _` | | __| '_ \__, |> _ <| |  | |/ _ \ \ / /
- *	| |___| (_| | | |_| | | |/ /| (_) | |__| |  __/\ V / 
- *	|______\__,_|_|\__|_| |_/_/  \___/|_____/ \___| \_/  
- *	
- *	Copyright (C) 2021 Laith98Dev
+ *   _           _ _   _    ___   ___  _____             
+ *  | |         (_) | | |  / _ \ / _ \|  __ \            
+ *  | |     __ _ _| |_| |_| (_) | (_) | |  | | _____   __
+ *  | |    / _` | | __| '_ \__, |> _ <| |  | |/ _ \ \ / /
+ *  | |___| (_| | | |_| | | |/ /| (_) | |__| |  __/\ V / 
+ *  |______\__,_|_|\__|_| |_/_/  \___/|_____/ \___| \_/  
  *  
- *	Youtube: Laith Youtuber
- *	Discord: Laith98Dev#0695
- *	Gihhub: Laith98Dev
- *	Email: help@laithdev.tk
- *	Donate: https://paypal.me/Laith113
+ *  Copyright (c) Laith98Dev
+ *  
+ *  Youtube: Laith Youtuber
+ *  Discord: Laith98Dev#0695 or @u.oo
+ *  Github: Laith98Dev
+ *  Email: spt.laithdev@gamil.com
+ *  Donate: https://paypal.me/Laith113
  *
  *	This program is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -39,23 +39,128 @@ use pocketmine\plugin\PluginBase;
 use pocketmine\event\Listener;
 use pocketmine\utils\Config;
 use pocketmine\utils\TextFormat as TF;
-use pocketmine\permission\DefaultPermissions;
-use pocketmine\event\player\PlayerCommandPreprocessEvent;
 use pocketmine\player\Player;
-
 use pocketmine\command\{Command, CommandSender};
+use pocketmine\event\entity\EntityTeleportEvent;
+use pocketmine\event\player\PlayerJoinEvent;
+use pocketmine\event\player\PlayerQuitEvent;
+use pocketmine\permission\PermissionAttachment;
 
-class Main extends PluginBase implements Listener 
+final class Main extends PluginBase implements Listener 
 {
-	/** @var Config */
-	private $cfg;
+	private Config $cfg;
+
+	private array $bannedCommands = [];
+
+	/** @var PermissionAttachment[] */
+	private array $bannedAttachments = [];
 	
 	public function onEnable(): void{
 		@mkdir($this->getDataFolder());
 		
-		$this->cfg = new Config($this->getDataFolder() . "config.yml", Config::YAML, ["cmds" => []]);// ok just one time :)
+		$this->cfg = new Config($this->getDataFolder() . "config.yml", Config::YAML, ["cmds" => []]);
 		
+		$this->initCommands();
+
 		$this->getServer()->getPluginManager()->registerEvents($this, $this);
+	}
+
+	private function initCommands()
+	{
+		$commandMap = $this->getServer()->getCommandMap();
+		$cmds = $commandMap->getCommands();
+		$commands = array_merge(...array_map(function ($k) use ($cmds){
+			return [strtolower($k) => $cmds[$k]];
+		}, array_keys($cmds)));
+
+		foreach ($this->cfg->get("cmds", []) as $cmd => $worlds){
+			$cmd = substr($cmd, 0, 1) === "/" ? substr($cmd, 1) : $cmd;
+			if(isset($commands[$cmd])){
+				$command = $commands[$cmd];
+				$this->bannedCommands[strtolower($command->getName())] = [
+					$command,
+					$worlds
+				];
+			}
+		}
+	}
+
+	public function onWorldChange(EntityTeleportEvent $event)
+	{
+		$player = $event->getEntity();
+		if($player instanceof Player){
+			if($event->getTo()->getWorld()->getFolderName() !== $event->getFrom()->getWorld()->getFolderName()){
+
+				if(isset($this->bannedAttachments[$player->getName()])){
+
+					/** 
+					 * @var PermissionAttachment $perm
+					 */
+					foreach ($this->bannedAttachments[$player->getName()] as $perm){
+						$player->removeAttachment($perm);
+					}
+		
+					$player->recalculatePermissions();
+		
+					unset($this->bannedAttachments[$player->getName()]);
+				}
+
+				/**
+				 * @var Command $command
+				 * @var string[] $worlds
+				 */
+				foreach ($this->bannedCommands as [$command, $worlds]){
+					if(!in_array($event->getTo()->getWorld()->getFolderName(), $worlds)) continue;
+					$this->prepareAttachment($player, $command);
+				}
+			}
+		}
+	}
+
+	private function prepareAttachment(Player $player, Command $command)
+	{
+		foreach ($command->getPermissions() as $permission){
+			if($player->hasPermission($permission)){
+				if(!isset($this->bannedAttachments[$player->getName()])){
+					$this->bannedAttachments[$player->getName()] = [];
+				}
+				
+				$this->bannedAttachments[$player->getName()][] = $player->addAttachment($this, $permission, false);
+			}
+		}
+
+		$player->recalculatePermissions();
+	}
+
+	public function onPlayerJoin(PlayerJoinEvent $event)
+	{
+		$player = $event->getPlayer();
+		/**
+		 * @var Command $command
+		 * @var string[] $worlds
+		 */
+		foreach ($this->bannedCommands as [$command, $worlds]){
+			if(!in_array($player->getWorld()->getFolderName(), $worlds)) continue;
+			$this->prepareAttachment($player, $command);
+		}
+	}
+	
+	public function onPlayerLeave(PlayerQuitEvent $event)
+	{
+		$player = $event->getPlayer();
+		if(isset($this->bannedAttachments[$player->getName()])){
+
+			/** 
+			 * @var PermissionAttachment $perm
+			 */
+			foreach ($this->bannedAttachments[$player->getName()] as $perm){
+				$player->removeAttachment($perm);
+			}
+
+			$player->recalculatePermissions();
+
+			unset($this->bannedAttachments[$player->getName()]);
+		}
 	}
 	
 	public function onCommand(CommandSender $sender, Command $cmd, string $cmdLabel, array $args): bool{
@@ -155,42 +260,34 @@ class Main extends PluginBase implements Listener
 		return true;
 	}
 	
-	public function onCommandPreprocess(PlayerCommandPreprocessEvent $event){
-        $player = $event->getPlayer();
-		$command = $event->getMessage();
-		
-		$cfg = $this->cfg;
-		$all = $cfg->get("cmds", []);
-		
-		foreach ($all as $cmd => $worlds){
-			
-			if(in_array($player->getWorld()->getFolderName(), $worlds) && strtolower(explode(" ", $command, 2)[0]) == $cmd){
-				// if(!$player->hasPermission(DefaultPermissions::ROOT_OPERATOR)){
-				if(!$player->hasPermission("bancommands.whitelist")){
-					$player->sendMessage(TF::RED . "Command Banned!");
-					$event->cancel();
-				}
-			}
-			
-			// if(in_array($player->getWorld()->getFolderName(), $worlds) && ($command == "/" . $cmd || strpos($command, $cmd) == true)){
-				// if(!$player->hasPermission(DefaultPermissions::ROOT_OPERATOR)){
-					// $player->sendMessage(TF::RED . "Command Banned!");
-					// $event->cancel();
-				// }
-			// }
-		}
-    }
-	
 	public function addCommand(string $cmd): bool{
 		$cfg = $this->cfg;
 		$all = $cfg->get("cmds", []);
 		$cmd_ = strtolower($cmd);
+		$cmd_ = substr($cmd_, 0, 1) === "/" ? substr($cmd_, 1) : $cmd_;
 		
 		if(!isset($all[$cmd_])){
-			$all[$cmd_] = [];
-			$cfg->set("cmds", $all);
-			$cfg->save();
-			return true;
+
+			$commandMap = $this->getServer()->getCommandMap();
+			$cmds = $commandMap->getCommands();
+			$commands = array_merge(...array_map(function ($k) use ($cmds){
+				return [strtolower($k) => $cmds[$k]];
+			}, array_keys($cmds)));
+
+			if(isset($commands[$cmd_])){
+				$command = $commands[$cmd_];
+				$this->bannedCommands[strtolower($command->getName())] = [
+					$command,
+					[]
+				];
+
+				$all[$cmd_] = [];
+
+				$cfg->set("cmds", $all);
+				$cfg->save();
+
+				return true;
+			}
 		}
 		
 		return false;
@@ -219,8 +316,18 @@ class Main extends PluginBase implements Listener
 		if(isset($all[$cmd_])){
 			if(!in_array($world, $all[$cmd_])){
 				$all[$cmd_][] = $world;
+
+				if(isset($this->bannedCommands[$cmd_])){
+					$this->bannedCommands[$cmd_][1] = $all[$cmd_];
+
+					if(($world_ = $this->getServer()->getWorldManager()->getWorldByName($world)) !== null){
+						foreach ($world_->getPlayers() as $p) $this->prepareAttachment($p, $this->bannedCommands[$cmd_][0]);
+					}
+				}
+
 				$cfg->set("cmds", $all);
 				$cfg->save();
+
 				return true;
 			}
 		}
@@ -236,6 +343,9 @@ class Main extends PluginBase implements Listener
 		if(isset($all[$cmd_])){
 			if(in_array($world, $all[$cmd_])){
 				unset($all[$cmd_][array_search($world, $all[$cmd_])]);
+
+				$all[$cmd_] = array_values($all[$cmd_]);
+
 				$cfg->set("cmds", $all);
 				$cfg->save();
 				return true;

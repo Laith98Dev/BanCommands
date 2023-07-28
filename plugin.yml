@@ -1,9 +1,9 @@
 name: BanCommands
-api: [4.0.0]
+api: [5.0.0]
 main: Laith98Dev\BanCommands\Main
 author: Laith98Dev
 website: https://github.com/Laith98Dev
-version: 1.0.0
+version: 2.0.0
 description: Simple plugin to ban a command from a specific world.
 
 commands:
