@@ -93,10 +93,9 @@ final class Main extends PluginBase implements Listener
 
 				if(isset($this->bannedAttachments[$player->getName()])){
 
-					/** 
-					 * @var PermissionAttachment $perm
-					 */
-					foreach ($this->bannedAttachments[$player->getName()] as $perm){
+					/** @var PermissionAttachment[] $perms */
+					$perms = $this->bannedAttachments[$player->getName()];
+					foreach ($perms as $perm){
 						$player->removeAttachment($perm);
 					}
 		
@@ -150,10 +149,9 @@ final class Main extends PluginBase implements Listener
 		$player = $event->getPlayer();
 		if(isset($this->bannedAttachments[$player->getName()])){
 
-			/** 
-			 * @var PermissionAttachment $perm
-			 */
-			foreach ($this->bannedAttachments[$player->getName()] as $perm){
+			/** @var PermissionAttachment[] $perms */
+			$perms = $this->bannedAttachments[$player->getName()];
+			foreach ($perms as $perm){
 				$player->removeAttachment($perm);
 			}
 
